@@ -1,6 +1,8 @@
 brew "git"
 brew "zsh"
+brew "bitwarden-cli"
 
+cask "bitwarden"
 cask "caffeine"
 cask "docker"
 cask "firefox"

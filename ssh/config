@@ -1,0 +1,3 @@
+# Bitwarden desktop app must have Settings > SSH Agent enabled.
+Host *
+  IdentityAgent ~/.bitwarden-ssh-agent.sock

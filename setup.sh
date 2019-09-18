@@ -7,6 +7,7 @@ main() {
   install_homebrew
   install_packages
   install_ohmyzsh
+  setup_ssh
   setup_symlinks
   setup_macOS_defaults
   update_macOS_login_items
@@ -70,12 +71,23 @@ install_ohmyzsh() {
   fi
 }
 
+setup_ssh() {
+  info "Setting up SSH..."
+  if bash "${DOTFILES_LOCAL_REPO}/ssh/setup.sh"; then
+    success "SSH setup successfully!"
+  else
+    error "SSH setup failed!"
+    exit 1
+  fi
+}
+
 setup_symlinks() {
   info "Setting up symlinks..."
 
   # Disable shell login message
   symlink ~/.hushlogin /dev/null
   symlink ~/.dotfiles "${DOTFILES_LOCAL_REPO}"
+  symlink ~/.ssh/config "${DOTFILES_LOCAL_REPO}/ssh/config"
   symlink ~/.zshrc "${DOTFILES_LOCAL_REPO}/terminal/zshrc"
 
   success "Symlinks successfully setup!"
