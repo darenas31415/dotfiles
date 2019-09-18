@@ -1,0 +1,5 @@
+# User-local binaries take priority
+export PATH="$HOME/.local/bin:$PATH"
+
+# Disable Homebrew analytics
+export HOMEBREW_NO_ANALYTICS=1
