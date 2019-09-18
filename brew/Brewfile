@@ -6,6 +6,7 @@ brew "git"
 brew "zsh"
 
 cask "docker"
+cask "dropbox"
 cask "firefox"
 cask "google-chrome"
 cask "iterm2"

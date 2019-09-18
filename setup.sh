@@ -88,6 +88,7 @@ function setup_symlinks() {
   # Disable shell login message
   symlink "hushlogin" /dev/null ~/.hushlogin
   symlink "dotfiles" ${DOTFILES_LOCAL_REPO} ~/.dotfiles
+  symlink ".ssh/config" ${DOTFILES_LOCAL_REPO}/.ssh/config ~/.ssh/config
 
   success "Symlinks successfully setup!"
 }
