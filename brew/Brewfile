@@ -1,0 +1,18 @@
+tap "homebrew/bundle"
+tap "homebrew/cask"
+tap "homebrew/core"
+
+brew "git"
+brew "zsh"
+
+cask "docker"
+cask "firefox"
+cask "google-chrome"
+cask "iterm2"
+cask "phpstorm"
+cask "sequel-pro"
+cask "skype"
+cask "sourcetree"
+cask "spectacle"
+cask "spotify"
+cask "textmate"
