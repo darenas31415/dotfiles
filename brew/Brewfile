@@ -3,6 +3,7 @@ tap "homebrew/cask"
 tap "homebrew/core"
 
 brew "git"
+brew "gpg"
 brew "zsh"
 
 cask "docker"

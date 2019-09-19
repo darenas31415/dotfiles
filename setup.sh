@@ -8,6 +8,7 @@ main() {
   clone_dotfiles_repo
   install_packages_with_brewfile
   install_ohmyzsh
+  import_gpg_keys
   setup_symlinks
   setup_macOS_defaults
   update_login_items
@@ -82,6 +83,19 @@ function install_ohmyzsh() {
   fi
 }
 
+import_gpg_keys() {
+  info "Importing GPG keys from Dropbox..."
+  local dropbox_gpg=~/Dropbox/dotfiles/gpg
+  if [ ! -e $dropbox_gpg ]; then
+      error "connect to Dropbox and sync dotfiles folder!"
+      exit 1
+  fi
+  gpg --import $dropbox_gpg/pgp-public-keys.asc
+  gpg --import $dropbox_gpg/pgp-private-keys.asc
+  gpg --import-ownertrust $dropbox_gpg/pgp-ownertrust.asc
+  success "GPG import succeeded!"
+}
+
 function setup_symlinks() {
   info "Setting up symlinks..."
 
@@ -89,6 +103,7 @@ function setup_symlinks() {
   symlink "hushlogin" /dev/null ~/.hushlogin
   symlink "dotfiles" ${DOTFILES_LOCAL_REPO} ~/.dotfiles
   symlink ".ssh/config" ${DOTFILES_LOCAL_REPO}/.ssh/config ~/.ssh/config
+  symlink "terminal/custom.zsh" ${DOTFILES_LOCAL_REPO}/terminal/custom.zsh ~/.oh-my-zsh/custom/custom.zsh
 
   success "Symlinks successfully setup!"
 }
