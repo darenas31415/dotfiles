@@ -13,6 +13,12 @@ function configure_dock() {
   # Remove all (default) app icons from the Dock
   defaults write com.apple.dock persistent-apps -array
   defaults write com.apple.dock recent-apps -array
+  # Add custom apps to the Dock
+  declare -a apps=("Google Chrome" "Firefox" "PhpStorm" "TextMate" "Sequel Pro" "Sourcetree" "iTerm" "Skype" "Spotify")
+  for app in "${apps[@]}"
+  do
+    defaults write com.apple.dock persistent-apps -array-add "<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>/Applications/${app}.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>"
+  done
   # Automatically hide and show the Dock
   defaults write com.apple.dock autohide -bool true
   # Quit Dock to rollout the changes
