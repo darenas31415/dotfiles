@@ -87,6 +87,8 @@ setup_symlinks() {
   # Disable shell login message
   symlink ~/.hushlogin /dev/null
   symlink ~/.dotfiles "${DOTFILES_LOCAL_REPO}"
+  symlink ~/.gitconfig "${DOTFILES_LOCAL_REPO}/git/gitconfig"
+  symlink ~/.gitignore_global "${DOTFILES_LOCAL_REPO}/git/gitignore_global"
   symlink ~/.ssh/config "${DOTFILES_LOCAL_REPO}/ssh/config"
   symlink ~/.zshrc "${DOTFILES_LOCAL_REPO}/terminal/zshrc"
 

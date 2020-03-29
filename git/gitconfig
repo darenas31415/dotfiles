@@ -1,0 +1,14 @@
+[commit]
+    gpgsign = true
+[gpg]
+    format = ssh
+[gpg "ssh"]
+    allowedSignersFile = ~/.ssh/allowed_signers
+[core]
+    excludesfile = ~/.gitignore_global
+[includeIf "gitdir:~/Projects/Personal/"]
+    path = ~/.gitconfig-personal
+[includeIf "gitdir:~/Projects/Work/"]
+    path = ~/.gitconfig-work
+[push]
+    autoSetupRemote = true
