@@ -9,6 +9,7 @@ main() {
   install_packages_with_brewfile
   install_ohmyzsh
   import_gpg_keys
+  setup_git
   setup_symlinks
   setup_macOS_defaults
   update_login_items
@@ -94,6 +95,20 @@ import_gpg_keys() {
   gpg --import $dropbox_gpg/pgp-private-keys.asc
   gpg --import-ownertrust $dropbox_gpg/pgp-ownertrust.asc
   success "GPG import succeeded!"
+}
+
+function setup_git() {
+  info "Setting up git defaults..."
+  local current_dir=$(pwd)
+  cd ${DOTFILES_LOCAL_REPO}/git
+  if bash setup.sh; then
+      cd $current_dir
+      success "git defaults updated successfully!"
+  else
+      cd $current_dir
+      error "git defaults update failed!"
+      exit 1
+  fi
 }
 
 function setup_symlinks() {
