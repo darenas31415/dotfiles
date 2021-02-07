@@ -4,19 +4,20 @@ DOTFILES_LOCAL_REPO=~/Projects/Personal/dotfiles
 
 main() {
   ask_for_sudo
-  install_homebrew
   clone_dotfiles_repo
-  install_packages_with_brewfile
+  is_macos && install_homebrew
+  is_macos && install_packages_with_brewfile
+  is_linux && install_linux_packages
   install_ohmyzsh
-  import_gpg_keys
+  import_gpg_keys_and_ssh
   setup_git
   setup_symlinks
-  setup_macOS_defaults
-  update_login_items
+  is_macos && setup_macOS_defaults
+  is_macos && update_macOS_login_items
   update_hosts_file
 }
 
-function ask_for_sudo() {
+ask_for_sudo() {
   info "Prompting for sudo password..."
   if sudo --validate; then
     while true; do sudo --non-interactive true; \
@@ -28,23 +29,7 @@ function ask_for_sudo() {
   fi
 }
 
-function install_homebrew() {
-  if [[ $(command -v brew) == "" ]]; then
-    info "Installing Hombrew..."
-    local url=https://raw.githubusercontent.com/Homebrew/install/master/install
-    if /usr/bin/ruby -e "$(curl -fsSL ${url})"; then
-      success "Homebrew installation succeeded!"
-    else
-      error "Homebrew installation failed!"
-      exit 1
-    fi
-  else
-    info "Updating Homebrew..."
-    brew update
-  fi
-}
-
-function clone_dotfiles_repo() {
+clone_dotfiles_repo() {
   info "Cloning dotfiles repository into ${DOTFILES_LOCAL_REPO}"
   if test -e $DOTFILES_LOCAL_REPO; then
     substep "${DOTFILES_LOCAL_REPO} already exists"
@@ -61,7 +46,23 @@ function clone_dotfiles_repo() {
   fi
 }
 
-function install_packages_with_brewfile() {
+install_homebrew() {
+  if [[ $(command -v brew) == "" ]]; then
+    info "Installing Hombrew..."
+    local url=https://raw.githubusercontent.com/Homebrew/install/master/install
+    if /usr/bin/ruby -e "$(curl -fsSL ${url})"; then
+      success "Homebrew installation succeeded!"
+    else
+      error "Homebrew installation failed!"
+      exit 1
+    fi
+  else
+    info "Updating Homebrew..."
+    brew update
+  fi
+}
+
+install_packages_with_brewfile() {
   local BREW_FILE_PATH="${DOTFILES_LOCAL_REPO}/brew/Brewfile"
   info "Installing packages within ${BREW_FILE_PATH}"
   if brew bundle check --file="$BREW_FILE_PATH" &> /dev/null; then
@@ -76,7 +77,13 @@ function install_packages_with_brewfile() {
   fi
 }
 
-function install_ohmyzsh() {
+install_linux_packages() {
+  info "Installing Linux packages..."
+  source "${DOTFILES_LOCAL_REPO}/linux/install.sh"
+  success "Linux packages installation succeeded!"
+}
+
+install_ohmyzsh() {
   info "Installing oh-my-zsh..."
   if [ ! -e ~/.oh-my-zsh ]; then
     local url=https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh
@@ -84,20 +91,39 @@ function install_ohmyzsh() {
   fi
 }
 
-import_gpg_keys() {
+import_gpg_keys_and_ssh() {
   info "Importing GPG keys from Dropbox..."
-  local dropbox_gpg=~/Dropbox/dotfiles/gpg
-  if [ ! -e $dropbox_gpg ]; then
-      error "connect to Dropbox and sync dotfiles folder!"
-      exit 1
+  if [ -z "$(gpg --list-keys)" ]; then
+    local dropbox_folder=~/Dropbox/dotfiles
+    if [ ! -e $dropbox_gpg ]; then
+        error "connect to Dropbox and sync dotfiles folder!"
+        exit 1
+    fi
+    read -p "Select profile: " profile
+    local dropbox_gpg=${dropbox_folder}/${profile}/gpg
+    if [ ! -e $dropbox_gpg ]; then
+        error "unable to find gpg folder for ${profile}!"
+        exit 1
+    fi
+    gpg --import $dropbox_gpg/pgp-public-keys.asc
+    gpg --import $dropbox_gpg/pgp-private-keys.asc
+    gpg --import-ownertrust $dropbox_gpg/pgp-ownertrust.asc
+    success "GPG import succeeded!"
+
+    info "Configuring SSH..."
+    local ssh_private_key=${dropbox_folder}/${profile}/ssh/id_rsa
+    echo "IdentityFile ${ssh_private_key}" >> ~/.ssh/config
+    echo "" >> ~/.ssh/config
+    echo "Host *" >> ~/.ssh/config
+    echo "  IgnoreUnknown UseKeychain" >> ~/.ssh/config
+    echo "  UseKeychain yes" >> ~/.ssh/config
+    chmod 600 "${ssh_private_key}"
+    ssh-add "${ssh_private_key}"
+    success "SSH config succeeded!"
   fi
-  gpg --import $dropbox_gpg/pgp-public-keys.asc
-  gpg --import $dropbox_gpg/pgp-private-keys.asc
-  gpg --import-ownertrust $dropbox_gpg/pgp-ownertrust.asc
-  success "GPG import succeeded!"
 }
 
-function setup_git() {
+setup_git() {
   info "Setting up git defaults..."
   local current_dir=$(pwd)
   cd ${DOTFILES_LOCAL_REPO}/git
@@ -111,19 +137,18 @@ function setup_git() {
   fi
 }
 
-function setup_symlinks() {
+setup_symlinks() {
   info "Setting up symlinks..."
 
   # Disable shell login message
   symlink "hushlogin" /dev/null ~/.hushlogin
   symlink "dotfiles" ${DOTFILES_LOCAL_REPO} ~/.dotfiles
-  symlink ".ssh/config" ${DOTFILES_LOCAL_REPO}/.ssh/config ~/.ssh/config
   symlink "terminal/custom.zsh" ${DOTFILES_LOCAL_REPO}/terminal/custom.zsh ~/.oh-my-zsh/custom/custom.zsh
 
   success "Symlinks successfully setup!"
 }
 
-function setup_macOS_defaults() {
+setup_macOS_defaults() {
   info "Updating macOS defaults..."
 
   local current_dir=$(pwd)
@@ -138,7 +163,7 @@ function setup_macOS_defaults() {
   fi
 }
 
-function update_login_items() {
+update_macOS_login_items() {
   info "Updating login items..."
   if osascript ${DOTFILES_LOCAL_REPO}/macOS/login_items.applescript &> /dev/null; then
     success "Login items updated successfully!"
@@ -148,7 +173,7 @@ function update_login_items() {
   fi
 }
 
-function update_hosts_file() {
+update_hosts_file() {
   info "Updating /etc/hosts..."
   local own_hosts_file_path=${DOTFILES_LOCAL_REPO}/hosts/own_hosts_file
   local downloaded_hosts_file_path=/etc/downloaded_hosts_file
@@ -179,7 +204,7 @@ function update_hosts_file() {
   sudo rm -f ${downloaded_hosts_file_path}
 }
 
-function symlink() {
+symlink() {
   application=$1
   point_to=$2
   destination=$3
@@ -197,7 +222,7 @@ function symlink() {
   fi
 }
 
-function pull_latest() {
+pull_latest() {
   substep "Pulling latest changes in ${1} repository..."
   if git -C "$1" fetch &> /dev/null && git -C "$1" reset --hard origin/master &> /dev/null; then
     return
@@ -206,7 +231,7 @@ function pull_latest() {
   fi
 }
 
-function coloredEcho() {
+colored_echo() {
   local text="$1";
   local color="$2";
   local arrow="$3";
@@ -228,20 +253,28 @@ function coloredEcho() {
   tput sgr0;
 }
 
-function info() {
-    coloredEcho "$1" cyan "========>"
+info() {
+    colored_echo "$1" cyan "========>"
 }
 
-function success() {
-    coloredEcho "$1" green "========>"
+success() {
+    colored_echo "$1" green "========>"
 }
 
-function error() {
-    coloredEcho "$1" red "========>"
+error() {
+    colored_echo "$1" red "========>"
 }
 
-function substep() {
-    coloredEcho "$1" magenta "===="
+substep() {
+    colored_echo "$1" magenta "===="
+}
+
+is_linux() {
+  [[ "${OSTYPE}" == "linux-gnu"* ]]
+}
+
+is_macos() {
+  [[ "$OSTYPE" == "darwin"* ]]
 }
 
 main "$@"
