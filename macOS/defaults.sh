@@ -54,6 +54,9 @@ function configure_finder() {
   defaults write com.apple.finder FXPreferredViewStyle -string clmv
   # Disable the warning before emptying the Trash
   defaults write com.apple.finder WarnOnEmptyTrash -bool false
+  # Set tap to click as true
+  defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
+  defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
 }
 
 function configure_iterm() {
