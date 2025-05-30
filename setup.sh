@@ -96,31 +96,32 @@ install_ohmyzsh() {
 import_gpg_keys_and_ssh() {
   info "Importing GPG keys from Dropbox..."
   if [ -z "$(gpg --list-keys)" ]; then
-    local dropbox_folder=~/Dropbox/dotfiles
-    if [ ! -e $dropbox_gpg ]; then
+    local dropbox_dir=~/Dropbox/dotfiles
+    if [ ! -e $dropbox_dir ]; then
         error "connect to Dropbox and sync dotfiles folder!"
         exit 1
     fi
-    read -p "Select profile: " profile
-    local dropbox_gpg=${dropbox_folder}/${profile}/gpg
-    if [ ! -e $dropbox_gpg ]; then
-        error "unable to find gpg folder for ${profile}!"
-        exit 1
-    fi
-    gpg --import $dropbox_gpg/pgp-public-keys.asc
-    gpg --import $dropbox_gpg/pgp-private-keys.asc
-    gpg --import-ownertrust $dropbox_gpg/pgp-ownertrust.asc
+    for current_folder in $dropbox_dir/*; do
+      gpg --import $current_folder/gpg/public-key.asc
+      gpg --import $current_folder/gpg/secret-key.asc
+    done
     success "GPG import succeeded!"
 
     info "Configuring SSH..."
-    local ssh_private_key=${dropbox_folder}/${profile}/ssh/id_rsa
-    echo "IdentityFile ${ssh_private_key}" >> ~/.ssh/config
-    echo "" >> ~/.ssh/config
+    mkdir ~/.ssh
+    chmod 700 ~/.ssh
+    for current_folder in $dropbox_dir/*; do
+      local profile=$(basename $current_folder)
+      local profile_ssh_folder=~/.ssh/$profile
+      mkdir $profile_ssh_folder
+      chmod 700 $profile_ssh_folder
+      cp -R $current_folder/ssh/ $profile_ssh_folder
+      chmod 600 $profile_ssh_folder/id_rsa
+      chmod 644 $profile_ssh_folder/id_rsa.pub
+    done
     echo "Host *" >> ~/.ssh/config
     echo "  IgnoreUnknown UseKeychain" >> ~/.ssh/config
     echo "  UseKeychain yes" >> ~/.ssh/config
-    chmod 600 "${ssh_private_key}"
-    ssh-add "${ssh_private_key}"
     success "SSH config succeeded!"
   fi
 }
