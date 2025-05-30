@@ -3,7 +3,6 @@
 DOTFILES_LOCAL_REPO=~/Projects/Personal/dotfiles
 
 main() {
-  ask_for_sudo
   clone_dotfiles_repo
   is_macos && install_homebrew
   is_macos && install_packages_with_brewfile
@@ -15,18 +14,6 @@ main() {
   is_macos && setup_macOS_defaults
   is_macos && update_macOS_login_items
   update_hosts_file
-}
-
-ask_for_sudo() {
-  info "Prompting for sudo password..."
-  if sudo --validate; then
-    while true; do sudo --non-interactive true; \
-      sleep 10; kill -0 "$$" || exit; done 2>/dev/null &
-    success "Sudo password correct!"
-  else
-    error "Sudo password failed!"
-    exit 1
-  fi
 }
 
 clone_dotfiles_repo() {
