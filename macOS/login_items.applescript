@@ -3,6 +3,7 @@
 set login_item_list to {¬
     "Bitwarden",¬
     "Caffeine",¬
+    "OrbStack",¬
     "Rectangle"¬
 }
 
