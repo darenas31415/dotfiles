@@ -1,0 +1,7 @@
+"$schema" = "https://starship.rs/config-schema.json"
+
+# Default $all format, kept down to the modules actually wanted: no line
+# break before the prompt character (one-line prompt), git status but no
+# other VCS (hg/fossil/pijul/vcsh), no language/toolchain version modules,
+# and only the infra/system modules picked module-by-module.
+format = "$username$hostname$kubernetes$directory$git_branch$git_commit$git_state$git_status$docker_context$azure$cmd_duration$jobs$battery$status$container$character"

@@ -6,3 +6,6 @@ export HOMEBREW_NO_ANALYTICS=1
 
 # Point ssh to Bitwarden's SSH agent socket
 export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
+
+# Starship prompt
+eval "$(starship init zsh)"

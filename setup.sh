@@ -6,7 +6,6 @@ main() {
   clone_dotfiles_repo
   install_homebrew
   install_packages
-  install_ohmyzsh
   setup_ssh
   setup_symlinks
   setup_macOS_defaults
@@ -63,14 +62,6 @@ install_packages() {
   fi
 }
 
-install_ohmyzsh() {
-  info "Installing oh-my-zsh..."
-  if [ ! -e ~/.oh-my-zsh ]; then
-    local url=https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
-    sh -c "$(curl -fsSL ${url})"
-  fi
-}
-
 setup_ssh() {
   info "Setting up SSH..."
   if bash "${DOTFILES_LOCAL_REPO}/ssh/setup.sh"; then
@@ -86,6 +77,7 @@ setup_symlinks() {
 
   # Disable shell login message
   symlink ~/.hushlogin /dev/null
+  symlink ~/.config/starship.toml "${DOTFILES_LOCAL_REPO}/terminal/starship.toml"
   symlink ~/.dotfiles "${DOTFILES_LOCAL_REPO}"
   symlink ~/.gitconfig "${DOTFILES_LOCAL_REPO}/git/gitconfig"
   symlink ~/.gitignore_global "${DOTFILES_LOCAL_REPO}/git/gitignore_global"
