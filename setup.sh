@@ -77,6 +77,7 @@ setup_symlinks() {
 
   # Disable shell login message
   symlink ~/.hushlogin /dev/null
+  symlink ~/.config/ghostty/config "${DOTFILES_LOCAL_REPO}/ghostty/config"
   symlink ~/.config/starship.toml "${DOTFILES_LOCAL_REPO}/terminal/starship.toml"
   symlink ~/.dotfiles "${DOTFILES_LOCAL_REPO}"
   symlink ~/.gitconfig "${DOTFILES_LOCAL_REPO}/git/gitconfig"
