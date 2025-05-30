@@ -3,6 +3,7 @@
 main() {
   configure_dock
   configure_finder
+  configure_iterm
 }
 
 function configure_dock() {
@@ -53,6 +54,10 @@ function configure_finder() {
   defaults write com.apple.finder FXPreferredViewStyle -string clmv
   # Disable the warning before emptying the Trash
   defaults write com.apple.finder WarnOnEmptyTrash -bool false
+}
+
+function configure_iterm() {
+  defaults write com.googlecode.iterm2 PrefsCustomFolder -string "${HOME}/.dotfiles/macOS/iTerm"
 }
 
 function quit() {
