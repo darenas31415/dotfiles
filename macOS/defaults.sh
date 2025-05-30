@@ -14,7 +14,7 @@ function configure_dock() {
   defaults write com.apple.dock persistent-apps -array
   defaults write com.apple.dock recent-apps -array
   # Add custom apps to the Dock
-  declare -a apps=("Google Chrome" "Firefox" "PhpStorm" "TextMate" "Sequel Pro" "Sourcetree" "iTerm" "Skype" "Spotify")
+  declare -a apps=("Google Chrome" "Firefox" "PhpStorm" "Sourcetree" "iTerm" "Slack")
   for app in "${apps[@]}"
   do
     defaults write com.apple.dock persistent-apps -array-add "<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>/Applications/${app}.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>"
