@@ -88,7 +88,7 @@ install_linux_packages() {
 install_ohmyzsh() {
   info "Installing oh-my-zsh..."
   if [ ! -e ~/.oh-my-zsh ]; then
-    local url=https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh
+    local url=https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
     sh -c "$(curl -fsSL ${url})"
   fi
 }
