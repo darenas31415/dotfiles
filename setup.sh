@@ -49,8 +49,10 @@ clone_dotfiles_repo() {
 install_homebrew() {
   if [[ $(command -v brew) == "" ]]; then
     info "Installing Hombrew..."
-    local url=https://raw.githubusercontent.com/Homebrew/install/master/install
-    if /usr/bin/ruby -e "$(curl -fsSL ${url})"; then
+    local url=https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+    if /bin/bash -c "$(curl -fsSL ${url})"; then
+      echo >> ~/.zprofile
+      echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
       success "Homebrew installation succeeded!"
     else
       error "Homebrew installation failed!"

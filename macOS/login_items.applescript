@@ -2,7 +2,7 @@
 
 set login_item_list to {¬
     "Dropbox",¬
-    "Spectacle"¬
+    "Rectangle"¬
 }
 
 tell application "System Events" to delete every login item
