@@ -1,23 +1,39 @@
 #!/usr/bin/env bash
 
-SIGNINGKEY=$(gpg --list-secret-keys --keyid-format long | grep sec | cut -d' ' -f 4 | cut -d'/' -f 2)
+dropbox_dir=~/Dropbox/dotfiles
+for directory in $dropbox_dir/*; do
+  profile=$(basename $directory)
+  content=$(gpg --import-options show-only --import $directory/gpg/public-key.asc)
+  username=$(echo $content | sed -E 's/.*uid (.*) <.*/\1/')
+  email=$(echo $content | sed -E 's/.*<(.*)>.*/\1/')
+  signingkey=$(echo $content | sed -E 's/.*\[SC\] (.*) uid.*/\1/')
+  cat <<EOT >> ~/.gitconfig-${profile}
+[user]
+    signingkey = ${signingkey}
+    name = ${username}
+    email = ${email}
+[core]
+    sshCommand = "ssh -i ~/.ssh/${profile}/id_rsa"
 
-if [ -z "${SIGNINGKEY}" ]; then
-  echo "Missing GPG key!"
-  exit 1
-fi
+EOT
+done
 
-USER_EMAIL=$(gpg --list-secret-keys --keyid-format long | grep uid | grep -o '[[:alnum:]+\.\_\-]*@[[:alnum:]+\.\_\-]*')
-
-git config --global commit.gpgsign true
-git config --global gpg.program $(which gpg)
-git config --global user.signingkey ${SIGNINGKEY}
-git config --global user.name $(git log -1 --pretty=format:'%an')
-git config --global user.email ${USER_EMAIL}
-git config --global core.excludesfile ~/.gitignore_global
+cat <<EOT >> ~/.gitconfig
+[commit]
+    gpgsign = true
+[gpg]
+    program = /usr/local/bin/gpg
+[core]
+    excludesfile = ~/.gitignore_global
+[includeIf "gitdir:~/Projects/Personal/"]
+    path = ~/.gitconfig-personal
+[includeIf "gitdir:~/Projects/Work/"]
+    path = ~/.gitconfig-work
+EOT
 
 cat <<EOT >> ~/.gitignore_global
 .DS_Store
 .idea
+.scratch
 
 EOT
