@@ -9,3 +9,6 @@ export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
 
 # Starship prompt
 eval "$(starship init zsh)"
+
+# Custom aliases
+source ~/.dotfiles/terminal/aliases.zsh
