@@ -29,6 +29,8 @@ cat <<EOT >> ~/.gitconfig
     path = ~/.gitconfig-personal
 [includeIf "gitdir:~/Projects/Work/"]
     path = ~/.gitconfig-work
+[push]
+    autoSetupRemote = true
 EOT
 
 cat <<EOT >> ~/.gitignore_global
