@@ -6,6 +6,7 @@ main() {
   clone_dotfiles_repo
   install_homebrew
   install_packages
+  install_claude_code
   setup_ssh
   setup_symlinks
   setup_macOS_defaults
@@ -62,6 +63,32 @@ install_packages() {
   fi
 }
 
+install_claude_code() {
+  if command -v claude &> /dev/null; then
+    success "Claude Code is already installed!"
+  else
+    info "Installing Claude Code..."
+    if curl -fsSL https://claude.ai/install.sh | bash; then
+      success "Claude Code installed successfully!"
+    else
+      error "Claude Code installation failed!"
+      exit 1
+    fi
+  fi
+
+  if claude plugin list 2>/dev/null | grep -q "caveman@caveman"; then
+    success "caveman plugin is already installed!"
+  else
+    info "Installing caveman plugin for Claude Code..."
+    if claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman; then
+      success "caveman plugin installed successfully!"
+    else
+      error "caveman plugin installation failed!"
+      exit 1
+    fi
+  fi
+}
+
 setup_ssh() {
   info "Setting up SSH..."
   if bash "${DOTFILES_LOCAL_REPO}/ssh/setup.sh"; then
@@ -77,6 +104,8 @@ setup_symlinks() {
 
   # Disable shell login message
   symlink ~/.hushlogin /dev/null
+  symlink ~/.claude/CLAUDE.md "${DOTFILES_LOCAL_REPO}/claude/CLAUDE.md"
+  symlink ~/.claude/settings.json "${DOTFILES_LOCAL_REPO}/claude/settings.json"
   symlink ~/.config/ghostty/config "${DOTFILES_LOCAL_REPO}/ghostty/config"
   symlink ~/.config/starship.toml "${DOTFILES_LOCAL_REPO}/terminal/starship.toml"
   symlink ~/.dotfiles "${DOTFILES_LOCAL_REPO}"

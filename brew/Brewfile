@@ -1,10 +1,12 @@
 brew "git"
 brew "zsh"
+brew "rtk"
 brew "starship"
 brew "bitwarden-cli"
 
 cask "bitwarden"
 cask "caffeine"
+cask "claude"
 cask "firefox"
 cask "ghostty"
 cask "google-chrome"
