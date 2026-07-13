@@ -3,7 +3,7 @@
 set login_item_list to {¬
     "Caffeine",¬
     "OrbStack",¬
-    "Rectangle"¬
+    "Rectangle",¬
 }
 
 tell application "System Events" to delete every login item

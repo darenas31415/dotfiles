@@ -1,0 +1,33 @@
+# User-local binaries take priority
+export PATH="$HOME/.local/bin:$PATH"
+
+# Point ssh to Bitwarden's SSH agent socket
+export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
+
+# Case-insensitive + fuzzy tab-completion matching
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+
+# Load zsh completion system
+autoload -Uz compinit && compinit
+
+# Starship prompt
+eval "$(starship init zsh)"
+
+# Replaces cd with frecency-based directory jumping
+eval "$(zoxide init --cmd cd zsh)"
+
+# Setup fzf key bindings
+eval "$(fzf --zsh)"
+
+# Ctrl+T: preview file contents with bat
+export FZF_CTRL_T_OPTS="--preview '[[ -d {} ]] && eza --tree --color=always {} | head -200 || bat --color=always --style=numbers --line-range=:500 {}'"
+
+# Modern ls replacement
+alias ls='eza -a --icons --git --group-directories-first'
+alias ll='eza -la --icons --git --group-directories-first'
+
+# Modern cat replacement
+alias cat='bat'
+
+# Custom aliases
+source ~/.dotfiles/terminal/aliases.zsh

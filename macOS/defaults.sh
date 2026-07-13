@@ -3,11 +3,10 @@
 main() {
   configure_dock
   configure_finder
-  configure_iterm
 }
 
 function configure_dock() {
-  # Don’t show recent applications in Dock
+  # Don't show recent applications in Dock
   defaults write com.apple.dock show-recents -bool false
   # Set the icon size of Dock items to 48 pixels
   defaults write com.apple.dock tilesize -int 48
@@ -15,7 +14,7 @@ function configure_dock() {
   defaults write com.apple.dock persistent-apps -array
   defaults write com.apple.dock recent-apps -array
   # Add custom apps to the Dock
-  declare -a apps=("Google Chrome" "Firefox" "PhpStorm" "Sourcetree" "iTerm" "Slack")
+  declare -a apps=("Brave Browser" "Firefox" "PhpStorm" "Zed" "Ghostty" "Slack" "Claude")
   for app in "${apps[@]}"
   do
     defaults write com.apple.dock persistent-apps -array-add "<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>/Applications/${app}.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>"
@@ -32,16 +31,16 @@ function configure_finder() {
   # Require password immediately after sleep or screen saver begins
   defaults write com.apple.screensaver askForPassword -int 1
   defaults write com.apple.screensaver askForPasswordDelay -int 0
-  # allow quitting via ⌘ + q; doing so will also hide desktop icons
+  # Allow quitting via ⌘ + q; doing so will also hide desktop icons
   defaults write com.apple.finder QuitMenuItem -bool true
-  # disable window animations and Get Info animations
+  # Disable window animations and Get Info animations
   defaults write com.apple.finder DisableAllAnimations -bool true
   # Set Downloads as the default location for new Finder windows
   defaults write com.apple.finder NewWindowTarget -string "PfLo"
   defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/Downloads/"
-  # disable status bar
+  # Disable status bar
   defaults write com.apple.finder ShowStatusBar -bool false
-  # disable path bar
+  # Disable path bar
   defaults write com.apple.finder ShowPathbar -bool false
   # Display full POSIX path as Finder window title
   defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
@@ -49,7 +48,6 @@ function configure_finder() {
   defaults write com.apple.finder _FXSortFoldersFirst -bool true
   # When performing a search, search the current folder by default
   defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
-  # Use list view in all Finder windows by default
   # Four-letter codes for view modes: icnv, clmv, Flwv, Nlsv
   defaults write com.apple.finder FXPreferredViewStyle -string clmv
   # Disable the warning before emptying the Trash
@@ -57,10 +55,8 @@ function configure_finder() {
   # Set tap to click as true
   defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
   defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
-}
-
-function configure_iterm() {
-  defaults write com.googlecode.iterm2 PrefsCustomFolder -string "${HOME}/.dotfiles/macOS/iTerm"
+  # Quit Finder to rollout the changes above
+  quit "Finder"
 }
 
 function quit() {

@@ -4,16 +4,13 @@ DOTFILES_LOCAL_REPO=~/Projects/Personal/dotfiles
 
 main() {
   clone_dotfiles_repo
-  is_macos && install_homebrew
-  is_macos && install_packages_with_brewfile
-  is_linux && install_linux_packages
-  install_ohmyzsh
-  import_gpg_keys_and_ssh
-  setup_git
+  install_homebrew
+  install_packages_with_brewfile
+  install_claude_code
+  setup_git_and_ssh
   setup_symlinks
-  is_macos && setup_macOS_defaults
-  is_macos && update_macOS_login_items
-  update_hosts_file
+  setup_macOS_defaults
+  update_macOS_login_items
 }
 
 clone_dotfiles_repo() {
@@ -40,6 +37,7 @@ install_homebrew() {
     if /bin/bash -c "$(curl -fsSL ${url})"; then
       echo >> ~/.zprofile
       echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+      eval "$(/opt/homebrew/bin/brew shellenv)"
       success "Homebrew installation succeeded!"
     else
       error "Homebrew installation failed!"
@@ -66,63 +64,36 @@ install_packages_with_brewfile() {
   fi
 }
 
-install_linux_packages() {
-  info "Installing Linux packages..."
-  source "${DOTFILES_LOCAL_REPO}/linux/install.sh"
-  success "Linux packages installation succeeded!"
-}
+install_claude_code() {
+  info "Installing/updating Claude Code..."
+  # Installed via the native installer (not Homebrew) so it self-updates on
+  # every run of this script, rather than being pinned to a brewed version.
+  if curl -fsSL https://claude.ai/install.sh | bash; then
+    success "Claude Code installed/updated successfully!"
+  else
+    error "Claude Code installation failed!"
+    exit 1
+  fi
 
-install_ohmyzsh() {
-  info "Installing oh-my-zsh..."
-  if [ ! -e ~/.oh-my-zsh ]; then
-    local url=https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
-    sh -c "$(curl -fsSL ${url})"
+  info "Installing caveman plugin for Claude Code..."
+  if claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman; then
+    success "caveman plugin installed successfully!"
+  else
+    error "caveman plugin installation failed!"
+    exit 1
   fi
 }
 
-import_gpg_keys_and_ssh() {
-  info "Importing GPG keys from Dropbox..."
-  if [ -z "$(gpg --list-keys)" ]; then
-    local dropbox_dir=~/Dropbox/dotfiles
-    if [ ! -e $dropbox_dir ]; then
-        error "connect to Dropbox and sync dotfiles folder!"
-        exit 1
-    fi
-    for current_folder in $dropbox_dir/*; do
-      gpg --import $current_folder/gpg/public-key.asc
-      gpg --import $current_folder/gpg/secret-key.asc
-    done
-    success "GPG import succeeded!"
-
-    info "Configuring SSH..."
-    mkdir ~/.ssh
-    chmod 700 ~/.ssh
-    for current_folder in $dropbox_dir/*; do
-      local profile=$(basename $current_folder)
-      local profile_ssh_folder=~/.ssh/$profile
-      mkdir $profile_ssh_folder
-      chmod 700 $profile_ssh_folder
-      cp -R $current_folder/ssh/ $profile_ssh_folder
-      chmod 600 $profile_ssh_folder/id_rsa
-      chmod 644 $profile_ssh_folder/id_rsa.pub
-    done
-    echo "Host *" >> ~/.ssh/config
-    echo "  IgnoreUnknown UseKeychain" >> ~/.ssh/config
-    echo "  UseKeychain yes" >> ~/.ssh/config
-    success "SSH config succeeded!"
-  fi
-}
-
-setup_git() {
-  info "Setting up git defaults..."
+setup_git_and_ssh() {
+  info "Setting up git config and SSH (from Bitwarden)..."
   local current_dir=$(pwd)
   cd ${DOTFILES_LOCAL_REPO}/git
   if bash setup.sh; then
       cd $current_dir
-      success "git defaults updated successfully!"
+      success "git config and SSH setup succeeded!"
   else
       cd $current_dir
-      error "git defaults update failed!"
+      error "git config and SSH setup failed!"
       exit 1
   fi
 }
@@ -133,7 +104,11 @@ setup_symlinks() {
   # Disable shell login message
   symlink "hushlogin" /dev/null ~/.hushlogin
   symlink "dotfiles" ${DOTFILES_LOCAL_REPO} ~/.dotfiles
-  symlink "terminal/custom.zsh" ${DOTFILES_LOCAL_REPO}/terminal/custom.zsh ~/.oh-my-zsh/custom/custom.zsh
+  symlink "terminal/zshrc" ${DOTFILES_LOCAL_REPO}/terminal/zshrc ~/.zshrc
+  symlink "terminal/starship.toml" ${DOTFILES_LOCAL_REPO}/terminal/starship.toml ~/.config/starship.toml
+  symlink "ssh/config" ${DOTFILES_LOCAL_REPO}/ssh/config ~/.ssh/config
+  symlink "ghostty/config" ${DOTFILES_LOCAL_REPO}/ghostty/config ~/.config/ghostty/config
+  symlink "claude/settings.json" ${DOTFILES_LOCAL_REPO}/claude/settings.json ~/.claude/settings.json
 
   success "Symlinks successfully setup!"
 }
@@ -163,37 +138,6 @@ update_macOS_login_items() {
   fi
 }
 
-update_hosts_file() {
-  info "Updating /etc/hosts..."
-  local own_hosts_file_path=${DOTFILES_LOCAL_REPO}/hosts/own_hosts_file
-  local downloaded_hosts_file_path=/etc/downloaded_hosts_file
-
-  if sudo cp "${own_hosts_file_path}" /etc/hosts; then
-    substep "Copying ${own_hosts_file_path} to /etc/hosts succeeded!"
-  else
-    error "Copying ${own_hosts_file_path} to /etc/hosts failed!"
-    exit 1
-  fi
-
-  if sudo curl --silent https://someonewhocares.org/hosts/hosts --output "${downloaded_hosts_file_path}"; then
-    substep "hosts file downloaded successfully"
-
-    if cat "${downloaded_hosts_file_path}" | \
-      sudo tee -a /etc/hosts > /dev/null; then
-      success "/etc/hosts updated"
-    else
-      error "Failed to update /etc/hosts"
-      exit 1
-    fi
-
-  else
-    error "Failed to download hosts file"
-    exit 1
-  fi
-
-  sudo rm -f ${downloaded_hosts_file_path}
-}
-
 symlink() {
   application=$1
   point_to=$2
@@ -214,7 +158,7 @@ symlink() {
 
 pull_latest() {
   substep "Pulling latest changes in ${1} repository..."
-  if git -C "$1" fetch &> /dev/null && git -C "$1" reset --hard origin/master &> /dev/null; then
+  if git -C "$1" fetch &> /dev/null && git -C "$1" reset --hard origin/main &> /dev/null; then
     return
   else
     error "Please pull latest changes in ${1} repository manually!"
@@ -257,14 +201,6 @@ error() {
 
 substep() {
     colored_echo "$1" magenta "===="
-}
-
-is_linux() {
-  [[ "${OSTYPE}" == "linux-gnu"* ]]
-}
-
-is_macos() {
-  [[ "$OSTYPE" == "darwin"* ]]
 }
 
 main "$@"

@@ -1,0 +1,17 @@
+# Full reference: https://ghostty.org/docs/config/reference
+
+# Window
+window-save-state = always
+window-padding-x = 12
+window-padding-y = 12
+
+# Splits
+split-divider-color = #808080
+unfocused-split-opacity = 0.65
+
+# Scroll
+mouse-scroll-multiplier = 3
+
+# Misc
+confirm-close-surface = false
+copy-on-select = clipboard
